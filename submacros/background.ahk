@@ -73,6 +73,7 @@ loop {
 	nm_guidingStarDetect()
 	nm_dailyReconnect()
 	nm_EmergencyBalloon()
+	;nm_alt_command_assist_detector()
 	sleep 1000
 }
 
@@ -419,6 +420,46 @@ nm_guidingStarDetect(){
 				if WinExist("natro_macro ahk_class AutoHotkey") {
 					Send_WM_COPYDATA(value, "natro_macro ahk_class AutoHotkey", 1)
 					LastGuidDetected := nowUnix()
+					break
+				}
+			}
+		}
+	}
+}
+
+nm_alt_command_assist_detector(){
+	Send_WM_COPYDATA("trying to get alt command", "natro_macro ahk_class AutoHotkey", 500)
+	static fieldnames := [ "BAMBOO" ]
+
+	xi:=windowX+windowWidth//2
+	yi:=windowY+windowHeight//2
+	ww:=windowX+windowWidth
+	wh:=windowY+windowHeight
+
+	GSfound:=0
+	Loop 10 {
+		try
+			result := ImageSearch(&FoundX, &FoundY, xi, yi, ww, wh, "*50 nm_image_assets\alt_commands\assist.png")
+		catch
+			return
+		if (result = 1) {
+			Send_WM_COPYDATA("found command alt", "natro_macro ahk_class AutoHotkey", 500)
+			GSfound:=1
+			break
+		}
+		
+		sleep(50)
+	}
+
+	if(GSfound){
+		for value in fieldnames {
+			try
+				result := ImageSearch(&FoundX, &FoundY, xi, yi, ww, wh, "*50 nm_image_assets\alt_commands\fields" value ".png")
+			catch
+				return
+			if (result = 1) {
+				if WinExist("natro_macro ahk_class AutoHotkey") {
+					Send_WM_COPYDATA(value, "natro_macro ahk_class AutoHotkey", 500)
 					break
 				}
 			}

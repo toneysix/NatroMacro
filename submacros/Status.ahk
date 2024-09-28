@@ -635,6 +635,21 @@ settings["GoldEggMatchIgnore"] := {enum: 358, type: "int", section: "Collect"}
 settings["DiamondEggMatchIgnore"] := {enum: 359, type: "int", section: "Collect"}
 settings["CoconutBoosterCheck"] := {enum: 360, type: "int", section: "Boost", regex: "i)^(0|1)$"}
 
+/* added */
+settings["n1minPercent"] := {enum: 361, type: "int", section: "Planters", regex: "i)^(10|20|30|40|50|60|70|80|90)$"}
+settings["n2minPercent"] := {enum: 362, type: "int", section: "Planters", regex: "i)^(10|20|30|40|50|60|70|80|90)$"}
+settings["n3minPercent"] := {enum: 363, type: "int", section: "Planters", regex: "i)^(10|20|30|40|50|60|70|80|90)$"}
+settings["n4minPercent"] := {enum: 364, type: "int", section: "Planters", regex: "i)^(10|20|30|40|50|60|70|80|90)$"}
+settings["n5minPercent"] := {enum: 365, type: "int", section: "Planters", regex: "i)^(10|20|30|40|50|60|70|80|90)$"}
+
+settings["n1priority"] := {enum: 80, type: "str", section: "Planters", regex: "i)^(None|Comforting|Refreshing|Satisfying|Motivating|Invigorating)$"}
+settings["n2priority"] := {enum: 81, type: "str", section: "Planters", regex: "i)^(None|Comforting|Refreshing|Satisfying|Motivating|Invigorating)$"}
+settings["n3priority"] := {enum: 82, type: "str", section: "Planters", regex: "i)^(None|Comforting|Refreshing|Satisfying|Motivating|Invigorating)$"}
+settings["n4priority"] := {enum: 83, type: "str", section: "Planters", regex: "i)^(None|Comforting|Refreshing|Satisfying|Motivating|Invigorating)$"}
+settings["n5priority"] := {enum: 84, type: "str", section: "Planters", regex: "i)^(None|Comforting|Refreshing|Satisfying|Motivating|Invigorating)$"}
+
+AltEnabled := 0
+
 bitmaps := Map()
 bitmaps["moon"] := Gdip_BitmapFromBase64("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")
 #Include "%A_ScriptDir%\..\nm_image_assets\offset\bitmaps.ahk"
@@ -789,9 +804,89 @@ CreateHoneyBitmap(honey := 1, backpack := 1)
 	return pBM
 }
 
+Send_WM_COPYDATA(StringToSend, TargetScriptTitle, wParam:=0)
+{
+    CopyDataStruct := Buffer(3*A_PtrSize)
+    SizeInBytes := (StrLen(StringToSend) + 1) * 2
+    NumPut("Ptr", SizeInBytes
+		, "Ptr", StrPtr(StringToSend)
+		, CopyDataStruct, A_PtrSize)
+
+	try
+		s := SendMessage(0x004A, wParam, CopyDataStruct,, TargetScriptTitle)
+	catch
+		return -1
+	else
+		return s
+}
+
+
+log()
+{
+	DetectHiddenWindows 1
+	if WinExist("natro_macro ahk_class AutoHotkey")
+	{
+			PostMessage 0x5550, 3
+			discord.SendEmbed("Stopping Macro...", 5066239, , , , id)
+	}
+	else
+		discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)
+		
+	DetectHiddenWindows 0
+}
+
+pause()
+{
+	global MacroState
+	
+	DetectHiddenWindows 1
+	if (!WinExist("natro_macro ahk_class AutoHotkey"))
+	{
+		discord.SendEmbed("Message chat log win is " WinExist("natro_macro ahk_class AutoHotkey"), 16711731, , , , 0)
+		return 0
+	}
+		
+	if (MacroState = 0)
+	{
+		discord.SendEmbed("Message chat log MacroState is 0", 16711731, , , , 0)
+		return 1
+	}
+
+	DetectHiddenWindows 1
+	if WinExist("natro_macro ahk_class AutoHotkey")
+	{
+		discord.SendEmbed("natro exists", 16711731, , , , 0)
+		PostMessage 0x5550, 2
+		return 1
+	}
+	
+	discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)		
+		
+	return 0
+}
+
+SendMessageToChat(message)
+{
+	m := message
+	if (pause() = 0)
+		return 0
+	
+	DetectHiddenWindows 1
+	if WinExist("natro_macro ahk_class AutoHotkey")
+	{
+		Send_WM_COPYDATA(m,'natro_macro ahk_class AutoHotkey', 99999)
+		return 1
+	}
+	
+	discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)	
+		
+	return 0
+}
+
+/* CMD */
 nm_command(command)
 {
-	global commandPrefix, MacroState, planters, timers, settings, blender, shrine
+	global commandPrefix, MacroState, planters, timers, settings, blender, shrine, AltEnabled
 	static ssmode := "All"
 
 	id := command.id, params := []
@@ -799,6 +894,134 @@ nm_command(command)
 		if (A_LoopField != "")
 			params.Push(A_LoopField)
 	params.Length := 10, params.Default := ""
+
+	AltProccessed := 0
+	AltEnabled := IniRead("settings\nm_config.ini", "Alt", "AltEnabled")
+
+	switch (name := params[1]), 0
+	{
+		case "alt":
+		AltProccessed := 1
+		switch params[2], 0
+		{
+			case "enable":
+			altEnabledP := params[3]		
+			if (altEnabledP = 0 or altEnabledP = 1)
+			{
+				if (AltEnabled != altEnabledP)
+				{		
+					DetectHiddenWindows 1
+					if WinExist("natro_macro ahk_class AutoHotkey")
+					{
+						discord.SendEmbed("Alt Mode has been " (altEnabledP ? "enabled" : "disabled"), 5066239, , , , id)
+						UpdateInt("AltEnabled", altEnabledP, 'Alt')
+						PostMessage 0x5550, 4, altEnabledP
+						if altEnabledP = 0
+						{
+							local currPrvSrv := IniRead("settings\nm_config.ini", "Alt", "AltPrevSrv")
+							UpdateStr("PrivServer", currPrvSrv, "Settings")
+						}						
+					}
+					else
+						discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)				
+				}
+				else 
+					discord.SendEmbed("Alt already " (AltEnabled ? "enabled" : "disabled"), 16711731, , , , id)
+			}
+			else
+				discord.SendEmbed("Error: Value must be 0 (disable) or 1 (enable)", 16711731, , , , id)		
+			
+			case "join":
+			if (AltEnabled = 1) 
+			{
+				value := Trim(SubStr(command.content, InStr(command.content, params[2])+StrLen(params[2])))
+				if value ~= ("i)^(((http(s)?):\/\/)?((www|web)\.)?roblox\.com\/games\/1537690962\/?([^\/]*)\?privateServerLinkCode=.{32}(\&[^\/]*)*|<blank>)$")
+				{
+					DetectHiddenWindows 1
+					if WinExist("natro_macro ahk_class AutoHotkey")
+					{
+						local currPrvSrv := IniRead("settings\nm_config.ini", "Settings", "PrivServer")
+						UpdateStr("AltPrevSrv", currPrvSrv, "Alt")
+						UpdateStr("PrivServer", value, "Settings")		
+						
+						PostMessage 0x5557, 2				
+					}
+					else
+						discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)					
+				}
+				else
+					discord.SendEmbed("``" ((StrLen(value) > 0) ? value : "<blank>") "`` is not an acceptable value for ``Private Server Link``!", 16711731, , , , id)					
+			}
+			else
+				discord.SendEmbed("Error: Alt mode disabled, Enable it by typing the following command ``?alt enable 1``", 16711731, , , , id)				
+			
+			case "assist":
+			if (AltEnabled = 1) 
+			{
+				value := Trim(SubStr(command.content, InStr(command.content, params[2])+StrLen(params[2])))
+				if (value ~= "i)^(Bamboo|Blue Flower|Cactus|Clover|Coconut|Dandelion|Mountain Top|Mushroom|Pepper|Pine Tree|Pineapple|Pumpkin|Rose|Spider|Strawberry|Stump|Sunflower)$")
+				{
+					DetectHiddenWindows 1
+					if WinExist("natro_macro ahk_class AutoHotkey")
+					{
+						discord.SendEmbed("Alt Assist set to " value, 5066239, , , , id)
+						Send_WM_COPYDATA(value, 'natro_macro ahk_class AutoHotkey', 999991)
+					}
+					else
+						discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)					
+				}
+				else
+					discord.SendEmbed("``" ((StrLen(value) > 0) ? value : "<blank>") "`` is not an acceptable value for ``Field Name``!", 16711731, , , , id)					
+			}
+			else
+				discord.SendEmbed("Error: Alt mode disabled, Enable it by typing the following command ``?alt enable 1``", 16711731, , , , id)	
+					
+			default:
+			postdata :=
+			(
+			'
+			{
+				"embeds": [{
+					"title": "Alt Commands",
+					"color": "5066239",
+					"fields": [{
+						"name": "' commandPrefix 'enable [0|1]",
+						"value": "Enable or disable alt mode",
+						"inline": true
+					},
+					{
+						"name": "' commandPrefix 'assist [Field Name]",
+						"value": "Makes alt assist you on specific field",
+						"inline": true
+					}]
+				}],
+				"allowed_mentions": {
+					"parse": []
+				},
+				"message_reference": {
+					"message_id": "' id '",
+					"fail_if_not_exists": false
+				}
+			}
+			'
+			)			
+			
+			discord.SendMessageAPI(postdata)			
+		}
+	}
+
+	if AltProccessed
+	{
+		command_buffer.RemoveAt(1)
+		return
+	}
+
+	if AltEnabled
+	{
+		command_buffer.RemoveAt(1)
+		discord.SendEmbed("You cannot use any other commands in ALT mode, type ``?alt enable 0`` to disable ALT mode", 16711731, , , , id)	
+		return
+	}
 
 	switch (name := params[1]), 0
 	{
@@ -1079,6 +1302,16 @@ nm_command(command)
 				discord.SendEmbed("Error: Macro not found!", 16711731, , , , id)
 		}
 
+		case "chat":
+		if (!params[2])
+			discord.SendEmbed("Message cannot be empty", 16711731, , , , id)
+		else
+		{
+			if (SendMessageToChat(params[2]) = 0)
+				discord.SendEmbed("Message hasnt sent due to error", 16711731, , , , id)
+			else
+				discord.SendEmbed("Message sent", 5066239, , , , id)		
+		}
 
 		case "start":
 		if (MacroState = 0)

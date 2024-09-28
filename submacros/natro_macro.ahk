@@ -1,4 +1,4 @@
-﻿/*
+/*
 Natro Macro (https://github.com/NatroTeam/NatroMacro)
 Copyright © Natro Team (https://github.com/NatroTeam)
 
@@ -30,6 +30,7 @@ You should have received a copy of the license along with Natro Macro. If not, p
 #Include "Roblox.ahk"
 #Include "DurationFromSeconds.ahk"
 #Include "nowUnix.ahk"
+#Include "Hub.ahk"
 
 #Warn VarUnset, Off
 OnError (e, mode) => (mode = "Return") ? -1 : 0
@@ -109,7 +110,7 @@ OnMessage(0x5557, nm_ForceReconnect)
 OnMessage(0x5558, nm_AmuletPrompt)
 
 ; set version identifier
-VersionID := "1.0.0.2"
+VersionID := "1.0.0.4 (sixteen edition)"
 
 ;initial load warnings
 if (A_ScreenDPI != 96)
@@ -163,6 +164,8 @@ SC_Enter:="sc01c" ; Enter
 SC_LShift:="sc02a" ; LShift
 SC_Space:="sc039" ; Space
 SC_1:="sc002" ; 1
+AltPrevSrv:=""
+isGathering:=0
 
 ; import patterns and syntax check
 nm_importPatterns()
@@ -830,11 +833,20 @@ nm_importConfig()
 		, "TimerX", 150
 		, "TimerY", 150
 		, "TimersOpen", 0)
+		
+	config["Alt"] := Map("AltEnabled", 0
+		, "AltPrevSrv", "")		
 
 	local k, v, i, j
 	for k,v in config ; load the default values as globals, will be overwritten if a new value exists when reading
+	{
 		for i,j in v
+		{
 			%i% := j
+			;MsgBox Format("The result is: {1} {2} {3} {4}", k, i, (isSet(%i%) ? %i% : "nil"), j), "Error", 0x1010 " T30"
+		}
+	}
+			
 
 	local inipath := A_WorkingDir "\settings\nm_config.ini"
 
@@ -842,10 +854,11 @@ nm_importConfig()
 		nm_ReadIni(inipath)
 
 	local ini := ""
-	for k,v in config ; overwrite any existing .ini with updated one with all new keys and old values
+	for k, v in config ; overwrite any existing .ini with updated one with all new keys and old values
 	{
 		ini .= "[" k "]`r`n"
 		for i in v
+			;MsgBox Format("The result is: {1} {2} {3}", k, i, (isSet(%i%) ? %i% : "nil")), "Error", 0x1010 " T30"
 			ini .= i "=" %i% "`r`n"
 		ini .= "`r`n"
 	}
@@ -871,7 +884,14 @@ nm_ReadIni(path)
 
 			default:
 			if (p := InStr(A_LoopField, "="))
-				try k := SubStr(A_LoopField, 1, p-1), %k% := IsInteger(v := SubStr(A_LoopField, p+1)) ? Integer(v) : v
+			{
+				try{	
+					k := SubStr(A_LoopField, 1, p-1)
+					%k% := IsInteger(v := SubStr(A_LoopField, p+1)) ? Integer(v) : v
+					;MsgBox Format("The result is: {1} {2}", k, (isSet(%k%) ? %k% : "nil")), "Error", 0x1010 " T30"
+				}
+				
+			}	
 		}
 	}
 }
@@ -889,6 +909,7 @@ SatisfyingFields:=["Pineapple", "Sunflower", "Pumpkin"]
 MotivatingFields:=["Stump", "Spider", "Mushroom", "Rose"]
 InvigoratingFields:=["Pepper", "Mountain Top", "Clover", "Cactus"]
 
+altHub :=0 
 ;field planters ordered from best to worst (will always try to pick the best planter for the field)
 ;planters that provide no bonuses at all are ordered by worst to best so it can preserve the "better" planters for other nectar types
 ;planters array: [1] planter name, [2] nectar bonus, [3] speed bonus, [4] hours to complete growth (no field degradation is assumed) (rounded up 2 d.p.)
@@ -1464,6 +1485,269 @@ CommandoChickHealth := Map(3, 150
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; FIELD DEFAULT OVERRIDES
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+nm_importAltFieldDefaults()
+{
+	global AltFieldDefault := Map()
+
+	AltFieldDefault["Sunflower"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 4
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Upper Left"
+		, "distance", 8
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Dandelion"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 6
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Upper Left"
+		, "distance", 10
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Mushroom"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 2
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Upper Left"
+		, "distance", 8
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Blue Flower"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 7
+		, "camera", "Right"
+		, "turns", 2
+		, "sprinkler", "Center"
+		, "distance", 1
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 0)
+
+	AltFieldDefault["Clover"] := Map("pattern", "Stationary"
+		, "size", "S"
+		, "width", 1
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Center"
+		, "distance", 1
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 0)
+
+	AltFieldDefault["Spider"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 1
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Upper Left"
+		, "distance", 6
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Strawberry"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 1
+		, "camera", "Right"
+		, "turns", 2
+		, "sprinkler", "Upper Right"
+		, "distance", 6
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Bamboo"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 3
+		, "camera", "Left"
+		, "turns", 2
+		, "sprinkler", "Upper Left"
+		, "distance", 4
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Pineapple"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 1
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Upper Left"
+		, "distance", 8
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Stump"] := Map("pattern", "Stationary"
+		, "size", "S"
+		, "width", 1
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Center"
+		, "distance", 1
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 0)
+
+	AltFieldDefault["Cactus"] := Map("pattern", "Stationary"
+		, "size", "S"
+		, "width", 1
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Center"
+		, "distance", 1
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 0)
+
+	AltFieldDefault["Pumpkin"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 5
+		, "camera", "Right"
+		, "turns", 2
+		, "sprinkler", "Right"
+		, "distance", 8
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Pine Tree"] := Map("pattern", "e_lol"
+		, "size", "M"
+		, "width", 3
+		, "camera", "Left"
+		, "turns", 2
+		, "sprinkler", "Center"
+		, "distance", 2
+		, "percent", 100
+		, "gathertime", 100
+		, "convert", "Reset"
+		, "drift", 1
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 0)
+
+	AltFieldDefault["Rose"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 1
+		, "camera", "Left"
+		, "turns", 4
+		, "sprinkler", "Lower Right"
+		, "distance", 10
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Mountain Top"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 3
+		, "camera", "Left"
+		, "turns", 4
+		, "sprinkler", "Lower Left"
+		, "distance", 5
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 0)
+
+	AltFieldDefault["Coconut"] := Map("pattern", "CornerXSnake"
+		, "size", "M"
+		, "width", 3
+		, "camera", "Right"
+		, "turns", 2
+		, "sprinkler", "Right"
+		, "distance", 6
+		, "percent", 95
+		, "gathertime", 10
+		, "convert", "Walk"
+		, "drift", 0
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 1)
+
+	AltFieldDefault["Pepper"] := Map("pattern", "e_lol"
+		, "size", "M"
+		, "width", 2
+		, "camera", "None"
+		, "turns", 1
+		, "sprinkler", "Center"
+		, "distance", 2
+		, "percent", 100
+		, "gathertime", 100
+		, "convert", "Reset"
+		, "drift", 1
+		, "shiftlock", 0
+		, "invertFB", 0
+		, "invertLR", 0)
+}
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; ALT FIELD DEFAULT OVERRIDES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 nm_importFieldDefaults()
 {
 	global FieldDefault := Map()
@@ -1753,7 +2037,10 @@ nm_importFieldDefaults()
 	}
 	file := FileOpen(inipath, "w-d"), file.Write(ini), file.Close()
 }
+
+
 nm_importFieldDefaults()
+nm_importAltFieldDefaults()
 
 nm_LoadFieldDefaults()
 {
@@ -2080,8 +2367,6 @@ nm_AutoUpdateHandler(req)
 	if (req.readyState != 4)
 		return
 
-	if (req.status = 200)
-	{
 		LatestVer := Trim((latest_release := JSON.parse(req.responseText))["tag_name"], "v")
 		if (VerCompare(VersionID, LatestVer) < 0)
 		{
@@ -2281,7 +2566,7 @@ TabArr := ["Gather","Collect/Kill","Boost","Quests","Planters","Status","Setting
 (TabCtrl := MainGui.Add("Tab", "x0 y-1 w500 h240 -Wrap", TabArr)).OnEvent("Change", (*) => TabCtrl.Focus())
 SendMessage 0x1331, 0, 20, , TabCtrl ; set minimum tab width
 ; check for update
-try AsyncHttpRequest("GET", "https://api.github.com/repos/NatroTeam/NatroMacro/releases/latest", nm_AutoUpdateHandler, Map("accept", "application/vnd.github+json"))
+try AsyncHttpRequest("GET", "https://github.com/toneysix/NatroTeam/NatroMacro/releases/latest", nm_AutoUpdateHandler, Map("accept", "application/vnd.github+json"))
 ; open Timers
 if (TimersOpen = 1)
 	run '"' exe_path32 '" /script "' A_WorkingDir '\submacros\PlanterTimers.ahk"'
@@ -3202,13 +3487,37 @@ MainGui["StartButton"].Enabled := 1
 MainGui["PauseButton"].Enabled := 1
 MainGui["StopButton"].Enabled := 1
 
+if !AltEnabled
+{
+	altHub := AltHubSerivce(0, (AltEnabled, itemName, count) => onUseCmd(itemName, count))
+	altHub.join()
+}
+
+AltControlEnabled :=0
 ;enable hotkeys
 try {
 	Hotkey StartHotkey, start, "On"
 	Hotkey PauseHotkey, nm_pause, "On"
 	Hotkey AutoClickerHotkey, autoclicker, "On T2"
 	Hotkey TimersHotkey, timers, "On"
+	Hotkey "F6", (s) => AltEnableControl(), "On"
 }
+catch as e 
+{
+	MsgBox "Exception thrown!`n`nwhat: " e.what "`nfile: " e.file 
+        . "`nline: " e.line "`nmessage: " e.message "`nextra: " e.extra, "WARNING!!", 0x1030 " T60"
+}
+
+AltEnableControl()
+{
+	global AltControlEnabled
+	AltControlEnabled := AltControlEnabled ? 0 : 1
+}
+
+#HotIf !AltEnabled and AltControlEnabled and WinActive("Roblox ahk_exe RobloxPlayerBeta.exe")
+b::(s) => alt_use("JellyBeans")
+n::(s) => alt_use("Clouds", 3)
+#HotIf
 
 SetTimer Background, 2000
 if (A_Args.Has(1) && (A_Args[1] = 1))
@@ -4383,6 +4692,39 @@ nm_FieldDefaults(num){
 	IniWrite FieldDriftCheck%num%, "settings\nm_config.ini", "Gather", "FieldDriftCheck" num
 	disableSave:=0
 }
+
+altSetField(fieldNameP){	
+	SendMessageToChat("Меня вызвали помочь на " fieldNameP)
+	
+	global FieldName, FieldPattern, FieldPatternSize, FieldPatternReps, FieldPatternShift, FieldPatternInvertFB, FieldPatternInvertLR, FieldUntilMins, FieldUntilPack, FieldReturnType, FieldSprinklerLoc, FieldSprinklerDist, FieldRotateDirection, FieldRotateTimes, FieldDriftCheck
+		
+	FieldName:=fieldNameP
+	FieldPattern:=AltFieldDefault[fieldNameP]["pattern"]
+	FieldPatternSize:=AltFieldDefault[fieldNameP]["size"]
+	FieldPatternReps:=AltFieldDefault[fieldNameP]["width"]
+	FieldPatternShift:=AltFieldDefault[fieldNameP]["shiftlock"]
+	FieldPatternInvertFB:=AltFieldDefault[fieldNameP]["invertFB"]
+	FieldPatternInvertLR:=AltFieldDefault[fieldNameP]["invertLR"]
+	FieldUntilMins:=AltFieldDefault[fieldNameP]["gathertime"]
+	FieldUntilPack:=AltFieldDefault[fieldNameP]["percent"]
+	FieldReturnType:=AltFieldDefault[fieldNameP]["convert"]
+	FieldSprinklerLoc:=AltFieldDefault[fieldNameP]["sprinkler"]
+	FieldSprinklerDist:=AltFieldDefault[fieldNameP]["distance"]
+	FieldRotateDirection:=AltFieldDefault[fieldNameP]["camera"]
+	FieldRotateTimes:=AltFieldDefault[fieldNameP]["turns"]
+	FieldDriftCheck:=AltFieldDefault[fieldNameP]["drift"]
+
+	nm_setStatus("alt field set", FieldSprinklerLoc)
+	
+	Click "Up"
+	nm_endWalk()
+	nm_Reset(0, 2000, 0, 0)
+	
+	if (MainGui["StartButton"].Enabled = 1)
+		SetTimer start, -500
+}
+
+
 nm_FDCHelp(*){
 	MsgBox "
 	(
@@ -4662,6 +5004,7 @@ nm_CollectKillButton(GuiCtrl, *){
 		}
 	}
 }
+
 nm_MondoAction(GuiCtrl?, *){
 	global MondoAction, MondoActionList
 
@@ -8102,7 +8445,7 @@ nm_ResetHotkeys(*){
 		Hotkey PauseHotkey, nm_pause, "Off"
 		Hotkey StopHotkey, stop, "Off"
 		Hotkey AutoClickerHotkey, autoclicker, "Off"
-		Hotkey TimersHotkey, timers, "Off"
+		Hotkey "F6", "Off"
 	}
 	IniWrite (StartHotkey := "F1"), "settings\nm_config.ini", "Settings", "StartHotkey"
 	IniWrite (PauseHotkey := "F2"), "settings\nm_config.ini", "Settings", "PauseHotkey"
@@ -8762,14 +9105,84 @@ nm_testButton(*){
 	)
 }
 
+onUseCmd(itemName, count)
+{
+	if !HiveConfirmed
+		return
+
+	nm_pause()
+	if itemName = "JellyBeans"
+	{
+		SendMessageToChat("Мне дана команда дать Jelly Beans")
+		Send 3
+		sleep(4000)
+	}
+	else if itemName = "Clouds"
+	{
+		SendMessageToChat("Я получил команду по запуску облачков в количестве " count)
+		
+		loop count
+		{
+			Send 6
+			sleep(1500)
+		}
+	}
+	
+	nm_pause()
+}
+
+alt_use(itemName, count:=1)
+{
+	static lastTimeCloudsUsed := 0, lastTimeJellyUsed := 0
+	global AltEnabled, altHub
+		
+	if altHub
+	{
+		if itemName = "Clouds"
+		{
+			if ((nowUnix()-lastTimeCloudsUsed)<60)
+				return 0
+				
+			lastTimeCloudsUsed := nowUnix()
+			altHub.useClouds(count)
+		}
+		else if itemName = "JellyBeans"
+		{
+			if ((nowUnix()-lastTimeJellyUsed)<40)
+				return 0
+			
+			lastTimeJellyUsed := nowUnix()
+			altHub.useJellyBeans()
+		}
+	}
+}
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; MAIN LOOP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 nm_Start(){
 	ActivateRoblox()
-	global serverStart := nowUnix()
+	global serverStart := nowUnix(), AltEnabled, altHub
+	
+	if AltEnabled
+	{
+		altHub := AltHubSerivce(1, (AltEnabled, itemName, count) => onUseCmd(itemName, count))
+		altHub.join()
+	
+		nm_setStatus('ALT ENABLED')
+		nm_setStatus('value', 'ALT ENABLED MAIN LOOP')
+		Loop 
+		{
+			DisconnectCheck()
+			alt_GoGather()		
+		}
+		
+		return
+	}
+	
 	Loop {
 		DisconnectCheck()
+		
 		;night
 		nm_Night()
 		;mondo
@@ -8784,9 +9197,9 @@ nm_Start(){
 		;quests
 		nm_QuestRotate()
 		;boost
-		nm_Boost()
+		nm_Boost()	
 		;gather
-		nm_GoGather()
+		nm_GoGather()		
 	}
 }
 
@@ -9255,9 +9668,12 @@ PostSubmacroMessage(submacro, args*){
 		try PostMessage(args*)
 	DetectHiddenWindows 0
 }
+
 nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
-	global resetTime, youDied, VBState, KeyDelay, SC_E, SC_Esc, SC_R, SC_Enter, RotRight, RotLeft, RotUp, RotDown, ZoomOut, objective, AFBrollingDice, AFBuseGlitter, AFBuseBooster, currentField, HiveConfirmed, GameFrozenCounter, MultiReset, bitmaps
+	global isGathering, resetTime, youDied, VBState, KeyDelay, SC_E, SC_Esc, SC_R, SC_Enter, RotRight, RotLeft, RotUp, RotDown, ZoomOut, objective, AFBrollingDice, AFBuseGlitter, AFBuseBooster, currentField, HiveConfirmed, GameFrozenCounter, MultiReset, bitmaps
 	static hivedown := 0
+
+	isGathering:=0
 	;check for game frozen conditions
 	if (GameFrozenCounter>=3) { ;3 strikes
 		nm_setStatus("Detected", "Roblox Game Frozen, Restarting")
@@ -14196,6 +14612,103 @@ nm_Mondo(){
 		IniWrite LastMondoBuff, "settings\nm_config.ini", "Collect", "LastMondoBuff"
 	}
 }
+
+alt_GoGather() 
+{
+	global youDied, VBState
+		, TCFBKey, AFCFBKey, TCLRKey, AFCLRKey, FwdKey, LeftKey, BackKey, RightKey, RotLeft, RotRight, SC_E, KeyDelay
+		, MoveMethod
+		, objective
+		, PFieldBoosted, GlitterKey, PFieldGuidExtend, PFieldGuidExtendMins, PFieldBoostExtend
+		, BoostChaserCheck, LastBlueBoost, LastRedBoost, LastMountainBoost, FieldDefault, HiveConfirmed
+		, FieldName, FieldPattern, FieldPatternSize, FieldPatternReps, FieldPatternShift, FieldPatternInvertFB, FieldPatternInvertLR, FieldUntilMins, FieldUntilPack, FieldReturnType, FieldSprinklerLoc, FieldSprinklerDist, FieldRotateDirection, FieldRotateTimes, FieldDriftCheck
+
+	nm_setStatus("Alt Traveling", FieldName)
+	;go to field
+	nm_gotoField(FieldName)
+	nm_setStatus("Alt Assisting", FieldName)
+	
+	;set sprinkler
+	nm_setStatus("set sprinkler", FieldSprinklerLoc " " FieldSprinklerDist " " FieldRotateDirection)
+	nm_setSprinkler(FieldName, FieldSprinklerLoc, FieldSprinklerDist)
+	;rotate
+	if (FieldRotateDirection != "None") {
+		direction:=FieldRotateDirection
+		sendinput "{" Rot%direction% " " FieldRotateTimes "}"
+	}
+	;determine if facing corner
+	FacingFieldCorner:=0
+	if((FieldName="pine tree" && ((FieldSprinklerLoc="upper" || FieldSprinklerLoc="upper left") && FieldRotateDirection="left" && FieldRotateTimes=1)) || ((FieldName="pineapple" && (FieldSprinklerLoc="upper left" && FieldRotateDirection="left" && FieldRotateTimes=1))) || (FieldName="spider" && ((FieldSprinklerLoc="upper" || FieldSprinklerLoc="upper left") && FieldRotateDirection="left" && FieldRotateTimes=1))) {
+		FacingFieldCorner:=1
+	}
+	;set direction keys
+	;foward/back
+	if(FieldPatternInvertFB){
+		TCFBKey:=BackKey
+		AFCFBKey:=FwdKey
+	} else {
+		TCFBKey:=FwdKey
+		AFCFBKey:=BackKey
+	}
+	if(FieldPatternInvertLR){
+		TCLRKey:=RightKey
+		AFCLRKey:=LeftKey
+	} else {
+		TCLRKey:=LeftKey
+		AFCLRKey:=RightKey
+	}
+	
+	nm_setStatus("FDCEnabled", FieldDriftCheck " " FieldPattern)
+	;set FDC switch
+	FDCEnabled := (FieldDriftCheck && (FieldPattern != "Stationary"))
+	
+	;gather loop
+	hwnd := GetRobloxHWND()
+	offsetY := GetYOffset(hwnd)
+	GetRobloxClientPos(hwnd)
+	MouseMove windowX+350, windowY+offsetY+100
+	bypass:=0
+	interruptReason := ""
+	if(FieldPatternShift) {
+		nm_setShiftLock(1)
+	}
+	while(1){
+		if !fieldPatternShift
+			MouseMove windowX+350, windowY+GetYOffset()+100
+		if(!DisableToolUse)
+			Click "Down"
+			
+		nm_setStatus("gather", FieldPattern " " FieldPatternSize " " FieldPatternReps " " FacingFieldCorner)	
+		nm_gather(FieldPattern, A_Index, FieldPatternSize, FieldPatternReps, FacingFieldCorner)
+
+		while ((GetKeyState("F14") && (A_Index <= 3600)) || (A_Index = 1)) { ; timeout 3m
+			;high priority interrupts
+			if (Mod(A_Index, 5) = 1) { ; every 250ms
+				if DisconnectCheck() {
+					interruptReason := "Disconnect"
+					break
+				}
+				if youDied {
+					interruptReason := "You Died!"
+					break
+				}
+			}
+
+			Sleep 50
+		}
+
+		Click "Up"
+		if interruptReason {
+			bypass := (interruptReason ~= "i)Disconnect|You Died!|Night|Inactive Honey")
+			if (!bypass && InStr(patterns[FieldPattern], ";@NoInterrupt"))
+				KeyWait "F14", "T180 L"
+			break
+		}
+		(FDCEnabled) && nm_fieldDriftCompensation()
+	}
+	nm_endWalk()
+}
+
 nm_GoGather(){
 	global youDied, VBState
 		, TCFBKey, AFCFBKey, TCLRKey, AFCLRKey, FwdKey, LeftKey, BackKey, RightKey, RotLeft, RotRight, SC_E, KeyDelay
@@ -14951,6 +15464,8 @@ nm_GoGather(){
 		nm_currentFieldDown()
 }
 nm_gather(pattern, index, patternsize:="M", reps:=1, facingcorner:=0){
+	global isGathering
+
 	if !patterns.Has(pattern) {
 		global FieldPattern
 		nm_setStatus("Error", "Pattern '" pattern "' does not exist!`nChanged back to '" (FieldPattern := pattern := StandardFieldDefault[FieldName]["pattern"]) "'")
@@ -14963,6 +15478,7 @@ nm_gather(pattern, index, patternsize:="M", reps:=1, facingcorner:=0){
 		: (patternsize="XL") ? 2
 		: 1 ; medium (default)
 
+	isGathering:=1
 	DetectHiddenWindows 1
 	if ((index = 1) || !WinExist("ahk_class AutoHotkey ahk_pid " currentWalk.pid))
 		nm_createWalk(patterns[pattern], "pattern",
@@ -15155,12 +15671,14 @@ nm_createWalk(movement, name:="", vars:="") ; this function generates the 'walk'
 }
 nm_endWalk() ; this function ends the walk script
 {
+	nm_setStatus('walk', 'about to finish')
 	global currentWalk
 	DetectHiddenWindows 1
 	try WinClose "ahk_class AutoHotkey ahk_pid " currentWalk.pid
 	DetectHiddenWindows 0
 	currentWalk.pid := currentWalk.name := ""
 	; if issues, we can check if closed, else kill and force keys up
+	nm_setStatus('walk', 'end')
 }
 nm_loot(length, reps, direction, tokenlink:=0){ ; length in tiles instead of ms (old)
 	global FwdKey, LeftKey, BackKey, RightKey, KeyDelay, bitmaps
@@ -16088,6 +16606,25 @@ ShellRun(prms*)
 	; IShellDispatch2.ShellExecute
 	shell.ShellExecute(prms*)
 }
+
+SendMessageToChat(message)
+{
+	ActivateRoblox()
+	hwnd := GetRobloxHWND()
+	offsetY := GetYOffset(hwnd)
+	GetRobloxClientPos(hwnd)
+
+	sleep 50
+	Send "{Text}/"
+	sleep 50
+	Send "{Text}" message
+	sleep 10
+	Send "{Text}`n"
+	sleep 250
+	MouseMove windowX+350, windowY+offsetY+100
+}
+
+
 nm_claimHiveSlot(){
 	global KeyDelay, FwdKey, RightKey, LeftKey, BackKey, ZoomOut, HiveSlot, HiveConfirmed, SC_E, SC_Esc, SC_R, SC_Enter, bitmaps, ReconnectMessage
 	static LastNatroSoBroke := 1
@@ -18745,8 +19282,10 @@ nm_gotoField(location){
 	nm_setShiftLock(0)
 
 	nm_createPath(path)
+	nm_setStatus('path', 'created')
 	KeyWait "F14", "D T5 L"
 	KeyWait "F14", "T120 L"
+	nm_setStatus('path', 'finish')
 	nm_endWalk()
 }
 nm_walkFrom(field){
@@ -20813,6 +21352,10 @@ stop(*){
 		Hotkey PauseHotkey, "Off"
 		Hotkey StartHotkey, "Off"
 	}
+	
+	if altHub != 0
+		altHub.leave()
+	
 	nm_endWalk()
 	sendinput "{" FwdKey " up}{" BackKey " up}{" LeftKey " up}{" RightKey " up}{" SC_Space " up}"
 	Click "Up"
@@ -20913,6 +21456,20 @@ nm_Pause(*){
 	}
 	Pause -1
 }
+
+; ALT Enable
+enableAlt(state)
+{
+	global AltEnabled
+	if state = AltEnabled then
+		return 0
+	end
+	
+	stop()
+	
+	return 1
+}
+
 ;AUTOCLICKER
 autoclicker(*){
 	global ClickDuration, ClickDelay
@@ -20989,13 +21546,30 @@ nm_WM_COPYDATA(wParam, lParam, *){
 		}
 		DetectHiddenWindows 0
 	}
+	else if (wParam = 99999)
+	{
+		DetectHiddenWindows 1	
+			
+		DetectHiddenWindows 0
+		SendMessageToChat(StringText)
+		nm_pause()
+	}
+	else if (wParam = 500)
+	{
+		nm_setStatus("ALT COMMAND LOG", StringText)
+	}
+	else if (wParam = 999991)
+	{
+		altSetField(StringText)
+	}	
 	else {
 		InStr(StringText, ": ") ? nm_setStatus(SubStr(StringText, 1, InStr(StringText, ": ")-1), SubStr(StringText, InStr(StringText, ": ")+2)) : nm_setStatus(StringText)
 	}
 	return 0
 }
-nm_ForceLabel(wParam, *){
+nm_ForceLabel(wParam, lParam, *){
 	Critical
+	
 	switch wParam
 	{
 		case 1:
@@ -21007,14 +21581,24 @@ nm_ForceLabel(wParam, *){
 
 		case 3:
 		stop()
+		
+		case 4:
+		enableAlt(lParam)
 	}
 	return 0
 }
+
 nm_ForceReconnect(wParam, *){
 	Critical
 	global ReconnectDelay := wParam
 	nm_endWalk()
 	CloseRoblox()
+	
+	if AltEnabled
+	{
+		DisconnectCheck()
+	}	
+	
 	return 0
 }
 nm_sendHeartbeat(*){
@@ -21056,6 +21640,7 @@ nm_setGlobalInt(wParam, lParam, *)
 	return 0
 }
 nm_UpdateGUIVar(var)
+	
 {
 	global
 	local k, z, num
@@ -21072,6 +21657,10 @@ nm_UpdateGUIVar(var)
 		case "FieldPatternSize1", "FieldPatternSize2", "FieldPatternSize3":
 		MainGui[k].Text := %k%
 		MainGui[k "UpDown"].Value := FieldPatternSizeArr[%k%]
+		
+		case "n1minPercent", "n2minPercent", "n3minPercent", "n4minPercent", "n5minPercent":
+		MainGui[k].Text := %k%
+		MainGui[k "UpDown"].Value := %k%
 
 		case "FieldUntilPack1", "FieldUntilPack2", "FieldUntilPack3", "FieldBoosterMins":
 		MainGui[k].Text := %k%

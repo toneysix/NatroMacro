@@ -357,4 +357,9 @@
 	, "SilverEggMatchIgnore"
 	, "GoldEggMatchIgnore"
 	, "DiamondEggMatchIgnore"
-	, "CoconutBoosterCheck"]
+	, "CoconutBoosterCheck"
+	, "n1minPercent"
+	, "n2minPercent"
+	, "n3minPercent"
+	, "n4minPercent"
+	, "n5minPercent"]

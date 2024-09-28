@@ -76,4 +76,9 @@
 	, "PlanterNectar3"
 	, "PlanterHarvestFull1"
 	, "PlanterHarvestFull2"
-	, "PlanterHarvestFull3"]
+	, "PlanterHarvestFull3"
+	, "n1priority"
+	, "n2priority"
+	, "n3priority"
+	, "n4priority"
+	, "n5priority"]

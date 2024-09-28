@@ -295,7 +295,8 @@ message .= (IsSet(natro_version) ? "\n\nMacro: **Natro v" natro_version "**\n"
 	. "Gather Fields: **" FieldName1 ", " FieldName2 ", " FieldName3 "**\n"
 	. "Consumables: **" ((StrLen(consumables) = 0) ? "None" : consumables) "**\n"
 	. "Planters: **" ((PlanterMode = 2) ? ("ON (" MaxAllowedPlanters " Planters)") : (PlanterMode = 1) ? ("ON (MANUAL)") : "OFF") "**\n"
-	. "Hive Slot: **" HiveSlot "**"
+	. "Hive Slot: **" HiveSlot "**\n"
+	. "*Пожалуйста, обратите внимание, это тестовая версия макроса, в которую включены доп. команды*, @sixteen"
 	: "")
 
 
