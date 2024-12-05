@@ -109,7 +109,7 @@ OnMessage(0x5557, nm_ForceReconnect)
 OnMessage(0x5558, nm_AmuletPrompt)
 
 ; set version identifier
-VersionID := "1.0.0.2"
+VersionID := "1.0.0.2 (sixteen edition)"
 
 ;initial load warnings
 if (A_ScreenDPI != 96)
@@ -533,6 +533,7 @@ nm_importConfig()
 		, "CocoCrabCheck", 0
 		, "LastCocoCrab", 1
 		, "StingerCheck", 0
+		, "StingerHopCheck", 0
 		, "StingerPepperCheck", 1
 		, "StingerMountainTopCheck", 1
 		, "StingerRoseCheck", 1
@@ -2777,6 +2778,7 @@ MainGui.Add("GroupBox", "x149 y42 w341 h60 vStingersGroupBox Hidden", "Stingers"
 MainGui.SetFont("s8 cDefault Norm", "Tahoma")
 MainGui.Add("CheckBox", "x217 y43 vStingerCheck Disabled Hidden Checked" StingerCheck, "Kill Vicious Bee").OnEvent("Click", nm_saveStingers)
 (GuiCtrl := MainGui.Add("CheckBox", "x315 y43 vStingerDailyBonusCheck Disabled Hidden Checked" StingerDailyBonusCheck, "Only Daily Bonus")).Section := "Collect", GuiCtrl.OnEvent("Click", nm_saveConfig)
+(GuiCtrl := MainGui.Add("CheckBox", "x420 y43 vStingerHopCheck Disabled Hidden Checked" StingerHopCheck, "Pub.Hop")).Section := "Collect", GuiCtrl.OnEvent("Click", nm_saveStingersHop)
 MainGui.Add("Text", "x168 y69 +BackgroundTrans Hidden vTextFields", "Fields:")
 (GuiCtrl := MainGui.Add("CheckBox", "x220 y62 vStingerCloverCheck Disabled Hidden Checked" StingerCloverCheck, "Clover")).Section := "Collect", GuiCtrl.OnEvent("Click", nm_saveConfig)
 (GuiCtrl := MainGui.Add("CheckBox", "x220 y80 vStingerSpiderCheck Disabled Hidden Checked" StingerSpiderCheck, "Spider")).Section := "Collect", GuiCtrl.OnEvent("Click", nm_saveConfig)
@@ -3504,6 +3506,7 @@ nm_TabCollectLock(){
 	MainGui["BugrunScorpionsLoot"].Enabled := 0
 	MainGui["BugrunWerewolfLoot"].Enabled := 0
 	MainGui["StingerCheck"].Enabled := 0
+	MainGui["StingerHopCheck"].Enabled := 0
 	MainGui["StingerDailyBonusCheck"].Enabled := 0
 	MainGui["StingerCloverCheck"].Enabled := 0
 	MainGui["StingerSpiderCheck"].Enabled := 0
@@ -3597,6 +3600,7 @@ nm_TabCollectUnLock(){
 	MainGui["BugrunScorpionsLoot"].Enabled := 1
 	MainGui["BugrunWerewolfLoot"].Enabled := 1
 	MainGui["StingerCheck"].Enabled := 1
+
 	if (StingerCheck = 1)
 	{
 		MainGui["StingerDailyBonusCheck"].Enabled := 1
@@ -3606,7 +3610,9 @@ nm_TabCollectUnLock(){
 		MainGui["StingerRoseCheck"].Enabled := 1
 		MainGui["StingerMountainTopCheck"].Enabled := 1
 		MainGui["StingerPepperCheck"].Enabled := 1
+		MainGui["StingerHopCheck"].Enabled := 1
 	}
+
 	MainGui["TunnelBearCheck"].Enabled := 1
 	MainGui["TunnelBearBabyCheck"].Enabled := 1
 	MainGui["KingBeetleCheck"].Enabled := 1
@@ -4619,7 +4625,7 @@ nm_CollectKillButton(GuiCtrl, *){
 		,"BugrunInterruptCheck","TextLoot","TextKill","TextLineBugRun1","TextLineBugRun2"
 		,"BugrunLadybugsLoot","BugrunRhinoBeetlesLoot","BugrunSpiderLoot","BugrunMantisLoot","BugrunScorpionsLoot","BugrunWerewolfLoot"
 		,"BugrunLadybugsCheck","BugrunRhinoBeetlesCheck","BugrunSpiderCheck","BugrunMantisCheck","BugrunScorpionsCheck","BugrunWerewolfCheck"
-		,"StingersGroupBox","StingerCheck","StingerDailyBonusCheck","TextFields","StingerCloverCheck","StingerSpiderCheck","StingerCactusCheck","StingerRoseCheck","StingerMountainTopCheck","StingerPepperCheck"
+		,"StingersGroupBox","StingerCheck", "StingerHopCheck", "StingerDailyBonusCheck","TextFields","StingerCloverCheck","StingerSpiderCheck","StingerCactusCheck","StingerRoseCheck","StingerMountainTopCheck","StingerPepperCheck"
 		,"BossesGroupBox","TunnelBearCheck","KingBeetleCheck","CocoCrabCheck","StumpSnailCheck","CommandoCheck","TunnelBearBabyCheck","KingBeetleBabyCheck"
 		,"BabyLovePicture1","BabyLovePicture2","KingBeetleAmuletMode","ShellAmuletMode","KingBeetleAmuPicture","ShellAmuPicture","KingBeetleAmuletModeText","ShellAmuletModeText"
 		,"ChickLevelTextLabel","ChickLevelText","ChickLevel","SnailHPText","SnailHealthEdit","SnailHealthText","ChickHPText","ChickHealthEdit","ChickHealthText","SnailTimeText","SnailTimeUpDown","ChickTimeText","ChickTimeUpDown"
@@ -4965,8 +4971,21 @@ nm_saveStingers(*){
 	IniWrite (StingerCheck := MainGui["StingerCheck"].Value), "settings\nm_config.ini", "Collect", "StingerCheck"
 	for field in fields
 		MainGui["Stinger" field "Check"].Enabled := StingerCheck
-	MainGui["StingerDailyBonusCheck"].Enabled := StingerCheck
+	MainGui["StingerDailyBonusCheck"].Enabled := StingerCheck	
+	MainGui["StingerHopCheck"].Enabled := StingerCheck
 }
+
+nm_saveStingersHop(*){
+	global
+
+	if MainGui["StingerHopCheck"].Value
+		if (msgbox("Vicious Bee Public Hopping disables all except VB. Do you really want to enable VB public hopping?", "VB Public Hopping", 0x1034 " T60 Owner" MainGui.Hwnd) = "No")
+			return (MainGui["StingerHopCheck"].Value := 0)
+	
+	IniWrite (StingerHopCheck := MainGui["StingerHopCheck"].Value), "settings\nm_config.ini", "Collect", "StingerHopCheck"
+	nm_saveStingers()
+}
+
 nm_BossConfigHelp(*){ ; monster respawn time information
 	MsgBox "
 	(
@@ -8767,8 +8786,55 @@ nm_testButton(*){
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 nm_Start(){
 	ActivateRoblox()
-	global serverStart := nowUnix()
+	global serverStart := nowUnix(), StingerHopCheck, HiveConfirmed, VBState
+
+	if StingerHopCheck 
+		nm_setStatus("Vicious Hop", "Begin")	
+
 	Loop {
+		if StingerHopCheck
+		{
+			if nowUnix() - serverStart > 15
+			{
+				nm_setStatus("Vicious Hop", "No night found, reconnecting...")
+				HiveConfirmed := 0
+				Reconnect(0, 0)	
+				VBState:=0
+				nm_setStatus("Vicious Hop", "No night found, reconnected ...")
+				serverStart := nowUnix()
+				continue
+			}
+
+			if VBState = 1 && nm_confirmNight(0)
+				nm_setStatus("Vicious Hop", "Night found, claiming hive...")
+			else
+			{
+				Sleep(1000)
+				continue
+			}
+
+			if !HiveConfirmed && !nm_claimHiveSlot()
+			{
+				nm_setStatus("Vicious Hop", "No hive claimed, reconnecting..")
+				Reconnect(0, 0)	
+				VBState:=0
+				serverStart := nowUnix()
+
+				continue
+			}
+
+			nm_setStatus("Vicious Hop", "Hive found, claimed, start finding...")
+
+			nm_locateVB()
+
+			nm_setStatus("Vicious Hop", "Finish, reconnecting...")
+			Reconnect(0, 0)	
+			VBState:=0
+			serverStart := nowUnix()
+
+			continue
+		}
+
 		DisconnectCheck()
 		;night
 		nm_Night()
@@ -9397,7 +9463,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 			GetRobloxClientPos()
 			send "{" SC_Esc "}{" SC_R "}{" SC_Enter "}"
 			n := 0
-			while ((n < 2) && (A_Index <= 200))
+			while ((n < 2) && (A_Index <= 80))
 			{
 				Sleep 100
 				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY "|" windowWidth "|50")
@@ -9416,7 +9482,7 @@ nm_Reset(checkAll:=1, wait:=2000, convert:=1, force:=0){
 		loop 4 {
 			sleep 250+KeyDelay
 			pBMScreen := Gdip_BitmapFromScreen(region), s := 0
-			for i, k in ["day", "night", "day-gifted", "night-gifted", "noshadow-gifted", "noshadow-day", "noshadow-night", "wing"] {
+			for i, k in ["day", "night", "day-altUI", "night-altUI", "day-gifted", "night-gifted", "noshadow-gifted", "noshadow-day", "noshadow-night", "wing"] {
 				s := Max(s, Gdip_ImageSearch(pBMScreen, bitmaps["hive"][k], , , , , , 4, , , sconf))
 				if (s >= sconf) {
 					Gdip_DisposeImage(pBMScreen)
@@ -15710,25 +15776,14 @@ CloseRoblox()
 	for p in ComObjGet("winmgmts:").ExecQuery("SELECT * FROM Win32_Process WHERE Name LIKE '%Roblox%' OR CommandLine LIKE '%ROBLOXCORPORATION%'")
 		ProcessClose p.ProcessID
 }
-DisconnectCheck(testCheck := 0)
+
+Reconnect(testCheck := 0, claimHive := 1)
 {
 	global LastClock, LastGingerbread, HiveSlot, PrivServer, TotalDisconnects, SessionDisconnects, ReconnectMethod, PublicFallback, resetTime
 		, PlanterName1, PlanterName2, PlanterName3, PlanterHarvestTime1, PlanterHarvestTime2, PlanterHarvestTime3
 		, MacroState, ReconnectDelay
 		, FallbackServer1, FallbackServer2, FallbackServer3, beesmasActive
 	static ServerLabels := Map(0,"Public Server", 1,"Private Server", 2,"Fallback Server 1", 3,"Fallback Server 2", 4,"Fallback Server 3")
-
-	; return if not disconnected or crashed
-	ActivateRoblox()
-	GetRobloxClientPos()
-	if ((windowWidth > 0) && !WinExist("Roblox Crash")) {
-		pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2 "|" windowY+windowHeight//2 "|200|80")
-		if (Gdip_ImageSearch(pBMScreen, bitmaps["disconnected"], , , , , , 2) != 1) {
-			Gdip_DisposeImage(pBMScreen)
-			return 0
-		}
-		Gdip_DisposeImage(pBMScreen)
-	}
 
 	; end any residual movement and set reconnect start time
 	Click "Up"
@@ -15785,7 +15840,7 @@ DisconnectCheck(testCheck := 0)
 				try Run '"roblox://placeID=1537690962' (server ? ("&linkCode=" linkCodes[server]) : "") '"'
 
 				default:
-				if server {
+				if server && !StingerHopCheck {
 					;Close Roblox
 					CloseRoblox()
 					;Run Server Link (legacy method w/ browser)
@@ -15912,10 +15967,27 @@ DisconnectCheck(testCheck := 0)
 			}
 			PostSubmacroMessage("Status", 0x5552, 221, (server = 0))
 
-			if (testCheck || (nm_claimHiveSlot() = 1))
+			if (testCheck || !claimHive || (claimHive && nm_claimHiveSlot() = 1))
 				return 1
 		}
+	}	
+}
+
+DisconnectCheck(testCheck := 0)
+{
+	; return if not disconnected or crashed
+	ActivateRoblox()
+	GetRobloxClientPos()
+	if ((windowWidth > 0) && !WinExist("Roblox Crash")) {
+		pBMScreen := Gdip_BitmapFromScreen(windowX+windowWidth//2 "|" windowY+windowHeight//2 "|200|80")
+		if (Gdip_ImageSearch(pBMScreen, bitmaps["disconnected"], , , , , , 2) != 1) {
+			Gdip_DisposeImage(pBMScreen)
+			return 0
+		}
+		Gdip_DisposeImage(pBMScreen)
 	}
+
+	return Reconnect(testCheck)
 }
 LegacyReconnect(linkCode, i)
 {
@@ -16124,7 +16196,7 @@ nm_claimHiveSlot(){
 			send "{" SC_Esc "}{" SC_R "}{" SC_Enter "}"
 			SetKeyDelay PrevKeyDelay
 			n := 0
-			while ((n < 2) && (A_Index <= 200))
+			while ((n < 2) && (A_Index <= 80))
 			{
 				Sleep 100
 				GetRobloxClientPos(hwnd)
@@ -16427,9 +16499,11 @@ nm_Night(){
 	nm_NightMemoryMatch()
 	nm_locateVB()
 }
-nm_confirmNight(){
+nm_confirmNight(reset:=1){
 	nm_setStatus("Confirming", "Night")
-	nm_Reset(0, 2000, 0)
+	if reset
+		nm_Reset(0, 2000, 0)
+
 	sendinput "{" RotDown " 5}"
 	loop 10 {
 		SendInput "{" ZoomOut "}"
@@ -18665,6 +18739,8 @@ nm_PathVars(){
 		hive_bitmaps := Map()
 		hive_bitmaps["day"] := Gdip_CreateBitmap(16, 4), G := Gdip_GraphicsFromImage(hive_bitmaps["day"]), Gdip_GraphicsClear(G, 0xffd28f0c), Gdip_DeleteGraphics(G)
 		hive_bitmaps["night"] := Gdip_CreateBitmap(16, 4), G := Gdip_GraphicsFromImage(hive_bitmaps["night"]), Gdip_GraphicsClear(G, 0xffc08200), Gdip_DeleteGraphics(G)
+		hive_bitmaps["day-altUI"] := Gdip_CreateBitmap(16, 4), G := Gdip_GraphicsFromImage(hive_bitmaps["day-altUI"]), Gdip_GraphicsClear(G, 0xff916507), Gdip_DeleteGraphics(G)
+		hive_bitmaps["night-altUI"] := Gdip_CreateBitmap(16, 4), G := Gdip_GraphicsFromImage(hive_bitmaps["night-altUI"]), Gdip_GraphicsClear(G, 0xff845c00), Gdip_DeleteGraphics(G)
 		hive_bitmaps["day-gifted"] := Gdip_CreateBitmap(16, 4), G := Gdip_GraphicsFromImage(hive_bitmaps["day-gifted"]), Gdip_GraphicsClear(G, 0xffb97e03), Gdip_DeleteGraphics(G)
 		hive_bitmaps["night-gifted"] := Gdip_CreateBitmap(16, 4), G := Gdip_GraphicsFromImage(hive_bitmaps["night-gifted"]), Gdip_GraphicsClear(G, 0xffaa7400), Gdip_DeleteGraphics(G)
 		hive_bitmaps["noshadow-day"] := Gdip_CreateBitmap(16, 4), G := Gdip_GraphicsFromImage(hive_bitmaps["noshadow-day"]), Gdip_GraphicsClear(G, 0xffffb325), Gdip_DeleteGraphics(G)
@@ -18691,7 +18767,7 @@ nm_PathVars(){
 			SetKeyDelay 100+KeyDelay
 
 			n := 0
-			while ((n < 2) && (A_Index <= 200))
+			while ((n < 2) && (A_Index <= 80))
 			{
 				Sleep 100
 				pBMScreen := Gdip_BitmapFromScreen(windowX "|" windowY "|" windowWidth "|50")
@@ -18707,7 +18783,7 @@ nm_PathVars(){
 			Loop 4 {
 				sleep 250
 				pBMScreen := Gdip_BitmapFromScreen(region), s := 0
-				for i, k in ["day", "night", "day-gifted", "night-gifted", "noshadow-gifted", "noshadow-day", "noshadow-night", "wing"] {
+				for i, k in ["day", "night", "day-altUI", "night-altUI", "day-gifted", "night-gifted", "noshadow-gifted", "noshadow-day", "noshadow-night", "wing"] {
 					s := Max(s, Gdip_ImageSearch(pBMScreen, hive_bitmaps[k], , , , , , 4, , , sconf))
 					if (s >= sconf) {
 						Gdip_DisposeImage(pBMScreen)
