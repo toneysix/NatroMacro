@@ -1,7 +1,14 @@
-﻿/***********************************************************
+﻿#Requires AutoHotkey >=2.0- <2.1
+/***********************************************************
 * @description: Functions for automating the Roblox window
 * @author SP
 ***********************************************************/
+
+#Include "%A_InitialWorkingDir%\lib"
+#Include JSON.ahk
+
+global serverIds := []
+global errorMessage := ""
 
 ; Updates global variables windowX, windowY, windowWidth, windowHeight
 ; Optionally takes a known window handle to skip GetRobloxHWND call
@@ -96,4 +103,66 @@ ActivateRoblox()
 		return 0
 	else
 		return 1
+}
+
+JoinServerById(id)
+{
+	try run '"roblox://placeId=1537690962&gameInstanceId=' id '"'	
+}
+
+JoinToPrivateServer(linkCode)
+{
+	try Run '"roblox://placeID=1537690962&linkCode=' linkCode '"'
+}
+
+Rejoin()
+{
+	try Run '"roblox://placeID=1537690962"'
+}
+
+JoinRandomServer() 
+{
+	GetServerIds()
+    global serverIds
+
+    if (serverIds.Length > 1)
+	{
+        global RandomServer := serverIds[Random(1, serverIds.Length)]
+        JoinServerById(RandomServer)
+		return
+    } 
+
+	Sleep 5000
+}
+
+GetServerIds() 
+{
+    try 
+	{
+        global serverIds := []
+        cursor := ""
+
+        loop 2
+		{
+            url := "https://games.roblox.com/v1/games/1537690962/servers/0?sortOrder=1&excludeFullGames=true&limit=100" (
+                cursor ? "&cursor=" cursor : "")
+            req := ComObject("WinHttp.WinHttpRequest.5.1")
+            req.open("GET", url, true)
+            req.send()
+            req.WaitForResponse()
+
+            response := JSON.parse(req.responsetext, true, false)
+
+            cursor := response.nextPageCursor
+            data := response.data
+            for server in data 
+                serverIds.push(server.id)
+    	}
+    } 
+	catch Error 
+	{
+        ;response := JSON.parse(req.responsetext, true, false)
+        ;global errorMessage := response
+        return
+    }
 }

@@ -8781,6 +8781,54 @@ nm_testButton(*){
 	)
 }
 
+nm_VBHopping()
+{
+	global serverStart, HiveConfirmed, VBState
+
+	nm_setStatus("Vicious Hop", "Begin")
+	Loop 
+	{
+		if nowUnix() - serverStart > 15
+		{
+			nm_setStatus("Vicious Hop", "No night found, reconnecting...")
+			HiveConfirmed := 0
+			Reconnect(0, 0)	
+			VBState:=0
+			nm_setStatus("Vicious Hop", "No night found, reconnected ...")
+			serverStart := nowUnix()
+			Continue
+		}
+
+		if VBState = 1 && nm_confirmNight(0)
+			nm_setStatus("Vicious Hop", "Night found, claiming hive...")
+		else
+		{
+			Sleep(1000)
+			Continue
+		}
+
+		if !HiveConfirmed && !nm_claimHiveSlot()
+		{
+			nm_setStatus("Vicious Hop", "No hive claimed, reconnecting..")
+			Reconnect(0, 0)	
+			VBState:=0
+			serverStart := nowUnix()
+
+			Continue
+		}
+
+		nm_setStatus("Vicious Hop", "Hive found, claimed, start finding...")
+
+		nm_locateVB()
+
+		nm_setStatus("Vicious Hop", "Finish, reconnecting...")
+		Reconnect(0, 0)	
+		VBState:=0
+		serverStart := nowUnix()
+		Continue
+	}
+}
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; MAIN LOOP
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -8789,7 +8837,7 @@ nm_Start(){
 	global serverStart := nowUnix(), StingerHopCheck, HiveConfirmed, VBState
 
 	if StingerHopCheck 
-		nm_setStatus("Vicious Hop", "Begin")	
+		nm_VBHopping()
 
 	Loop {
 		if StingerHopCheck
@@ -15831,20 +15879,20 @@ Reconnect(testCheck := 0, claimHive := 1)
 				;Close Roblox
 				CloseRoblox()
 				;Run Server Deeplink
-				nm_setStatus("Attempting", ServerLabels[server])
-				try Run '"roblox://placeID=1537690962' (server ? ("&linkCode=" linkCodes[server]) : "") '"'
+				nm_setStatus("Attempting 1", ServerLabels[server])
+				StingerHopCheck ? JoinRandomServer() : (server ? JoinToPrivateServer(linkCodes[server]) : Rejoin())			
 
 				case 3,4:
 				;Run Server Deeplink (without closing)
-				nm_setStatus("Attempting", ServerLabels[server])
-				try Run '"roblox://placeID=1537690962' (server ? ("&linkCode=" linkCodes[server]) : "") '"'
+				nm_setStatus("Attempting 2", ServerLabels[server])
+				StingerHopCheck ? JoinRandomServer() : (server ? JoinToPrivateServer(linkCodes[server]) : Rejoin())
 
 				default:
 				if server && !StingerHopCheck {
 					;Close Roblox
 					CloseRoblox()
 					;Run Server Link (legacy method w/ browser)
-					nm_setStatus("Attempting", ServerLabels[server] " (Browser)")
+					nm_setStatus("Attempting 3", ServerLabels[server] " (Browser)")
 					if ((success := LegacyReconnect(linkCodes[server], i)) = 1) {
 						if (ReconnectMethod != "Browser") {
 							ReconnectMethod := "Browser"
@@ -15858,7 +15906,14 @@ Reconnect(testCheck := 0, claimHive := 1)
 					;Close Roblox
 					(i = 1) && CloseRoblox()
 					;Run Server Link (spam deeplink method)
-					try Run '"roblox://placeID=1537690962"'
+
+					if StingerHopCheck
+					{
+						JoinRandomServer()
+						continue
+					}
+						
+					Rejoin()
 				}
 			}
 			;STAGE 1 - wait for Roblox window
